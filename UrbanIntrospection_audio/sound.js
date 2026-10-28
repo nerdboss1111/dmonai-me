@@ -5,7 +5,7 @@
   const track=new Audio(path); track.loop=true; track.preload='none';
   const read=(key,fallback)=>{try{const n=Number(localStorage.getItem(key));return Number.isFinite(n)&&localStorage.getItem(key)!==null?Math.min(1,Math.max(0,n)):fallback}catch{return fallback}};
   const save=(key,value)=>{try{localStorage.setItem(key,String(value))}catch{}};
-  let musicVolume=read('urban-audio-music',.40), effectsVolume=read('urban-audio-effects',.45);
+  let musicVolume=read('urban-audio-music',.40), effectsVolume=read('urban-audio-effects',.65);
   let enabled=false,starting=false,context=null,fxBus=null,ambientBus=null,ambientSource=null,phase=0,paused=false,lastHover=0;
   track.volume=musicVolume;
 
@@ -35,25 +35,25 @@
     const filter=context.createBiquadFilter();filter.type='lowpass';filter.frequency.value=360;ambientSource.connect(filter);filter.connect(ambientBus);ambientBus.gain.value=0;ambientSource.start();
     return context;
   }
-  function ambient(){if(!context||!ambientBus)return;const levels=[.015,.065,.045,.024,.008];const amount=enabled&&!paused&&!document.hidden?effectsVolume*(levels[phase]||0):0;ambientBus.gain.setTargetAtTime(amount,context.currentTime,.5);if(fxBus)fxBus.gain.setTargetAtTime(effectsVolume,context.currentTime,.08)}
+  function ambient(){if(!context||!ambientBus)return;const levels=[.03,.24,.16,.09,.015];const amount=enabled&&!paused&&!document.hidden?effectsVolume*(levels[phase]||0):0;ambientBus.gain.setTargetAtTime(amount,context.currentTime,.5);if(fxBus)fxBus.gain.setTargetAtTime(effectsVolume,context.currentTime,.08)}
   function tone(freq,at=0,duration=.35,amount=.035,pan=0){
     if(!enabled||document.hidden||!context||!fxBus||effectsVolume===0)return;
     const t=context.currentTime+at,o=context.createOscillator(),g=context.createGain();o.type='sine';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(freq*.975,t+duration);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(amount,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+duration);
     o.connect(g);if(context.createStereoPanner){const p=context.createStereoPanner();p.pan.value=pan;g.connect(p);p.connect(fxBus)}else g.connect(fxBus);o.start(t);o.stop(t+duration+.02);
   }
-  function whoosh(amount=.06){
+  function whoosh(amount=.12){
     if(!enabled||document.hidden||!context||!fxBus||effectsVolume===0)return;
     const t=context.currentTime,buffer=context.createBuffer(1,Math.floor(context.sampleRate*.23),context.sampleRate),d=buffer.getChannelData(0);
     for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.35;
     const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();source.buffer=buffer;filter.type='bandpass';filter.frequency.setValueAtTime(500,t);filter.frequency.exponentialRampToValueAtTime(1800,t+.18);gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(amount,t+.045);gain.gain.exponentialRampToValueAtTime(.0001,t+.23);source.connect(filter);filter.connect(gain);gain.connect(fxBus);source.start(t);
   }
-  function sparkle(){tone(659,0,.36,.035,-.3);tone(880,.13,.42,.03,.25);tone(987,.29,.48,.022,-.05)}
-  function step(){if(!enabled||document.hidden||phase!==2||paused||!context||effectsVolume===0)return;tone(93,0,.14,.035,Math.random()*.5-.25);whoosh(.012)}
+  function sparkle(){tone(659,0,.36,.08,-.3);tone(880,.13,.42,.07,.25);tone(987,.29,.48,.055,-.05)}
+  function step(){if(!enabled||document.hidden||phase!==2||paused||!context||effectsVolume===0)return;tone(93,0,.14,.08,Math.random()*.5-.25);whoosh(.028)}
   setInterval(step,620);
   function scene(next){
     const n=Math.max(0,Math.min(4,Number(next)||0));shell.dataset.scene=String(n);if(n===phase)return;phase=n;ambient();
-    if(enabled&&phase===1)whoosh(.045);if(enabled&&phase===3)sparkle();if(enabled&&phase===4)tone(523,0,.55,.025,.1);
+    if(enabled&&phase===1)whoosh(.10);if(enabled&&phase===3)sparkle();if(enabled&&phase===4)tone(523,0,.55,.065,.1);
   }
   async function switchSound(){
     if(starting)return;
@@ -62,7 +62,7 @@
     try{
       // Both calls happen inside the gesture, which browsers require for audio.
       const play=track.play();const c=ensureContext();const resume=c&&c.state==='suspended'?c.resume():Promise.resolve();
-      await Promise.all([play,resume]);enabled=true;status.textContent='Sound is on. Adjust music and effects above.';ambient();tone(523,0,.3,.025);update();
+      await Promise.all([play,resume]);enabled=true;status.textContent='Sound is on. Adjust music and effects above.';ambient();tone(523,0,.3,.06);update();
     }catch(error){track.pause();enabled=false;ambient();status.textContent='Sound could not start. Tap again to retry.';update()}
     finally{starting=false;update()}
   }
@@ -74,15 +74,15 @@
   document.addEventListener('click',event=>{
     if(!enabled||event.target.closest('.urban-audio,.urban-audio-dialog'))return;
     const target=event.target.closest('button,a');if(!target)return;
-    if(target.matches('[data-room],#start-flight,#replay,#replay-footer'))whoosh(.045);
-    else if(target.matches('[data-open],[data-open-art],[data-product],[data-room-art],.art-card-image')){whoosh(.028);tone(587,0,.24,.018)}
-    else if(target.matches('[data-save],.save-art,[data-wall]'))tone(784,0,.2,.02);
+    if(target.matches('[data-room],#start-flight,#replay,#replay-footer'))whoosh(.10);
+    else if(target.matches('[data-open],[data-open-art],[data-product],[data-room-art],.art-card-image')){whoosh(.065);tone(587,0,.24,.06)}
+    else if(target.matches('[data-save],.save-art,[data-wall]'))tone(784,0,.2,.06);
   });
   document.addEventListener('pointerover',event=>{
     if(!enabled||event.pointerType!=='mouse')return;
     const target=event.target.closest('[data-open],[data-open-art],[data-product],.art-card-image');
     if(!target||(event.relatedTarget&&target.contains(event.relatedTarget))||Date.now()-lastHover<850)return;
-    lastHover=Date.now();tone(740,0,.18,.011,Math.random()*.5-.25);
+    lastHover=Date.now();tone(740,0,.18,.025,Math.random()*.5-.25);
   });
   const flight=document.getElementById('flight-hud'),index=document.getElementById('flight-index'),pause=document.getElementById('pause-flight');
   if(flight&&index){
