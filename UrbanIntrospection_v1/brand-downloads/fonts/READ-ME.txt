@@ -1,0 +1,7 @@
+ROOFTOP CUT
+Original custom display type for Urban Introspection by Deon Monai.
+26 uppercase letterforms; lowercase input maps to uppercase forms; digits and basic punctuation.
+Use for wordmarks, short headlines, labels and packaging. Use a neutral sans for long text.
+TTF: install on desktop. WOFF: embedded on website.
+The hand-cut contours and uneven counters are deliberate.
+This is a bespoke display alphabet, not a full multilingual type family.
