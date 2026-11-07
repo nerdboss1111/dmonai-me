@@ -21,6 +21,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://dmonai.me/live-research/a-bigger-brain-a-giant-body-and-one-bench/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://dmonai.me/Urban_Introspection/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
